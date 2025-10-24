@@ -1,11 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { ISurvey } from "../_types/survey";
+import { useSurveyStore } from "../_store/useSurveyStore";
 
-const StartButton = ({ surveyId }: { surveyId: string }) => {
+const StartButton = ({ survey }: { survey: ISurvey }) => {
   const router = useRouter();
+  const setSurvey = useSurveyStore((s) => s.setSurvey);
 
   const handleStart = async () => {
+    setSurvey(survey);
+
     let token = localStorage.getItem("sessionToken");
     if (!token) {
       token = crypto.randomUUID();
@@ -18,7 +23,7 @@ const StartButton = ({ surveyId }: { surveyId: string }) => {
         "Content-Type": "application/json",
         "X-Session-Token": token,
       },
-      body: JSON.stringify({ surveyId }),
+      body: JSON.stringify({ surveyId: survey.id }),
     });
 
     if (!res.ok) {

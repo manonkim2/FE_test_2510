@@ -20,11 +20,8 @@ const HomePage = async () => {
     <main className="text-center w-screen h-screen flex flex-col justify-center">
       <div className="mx-auto">
         <h1 className="text-2xl font-bold mb-2">{survey.title}</h1>
-        <p className="text-gray-500 mb-8">
-          총 {survey.questions.length}개의 질문이 있습니다.
-        </p>
 
-        <StartButton surveyId={survey.id} />
+        <StartButton survey={survey} />
       </div>
     </main>
   );
