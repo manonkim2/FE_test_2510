@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import Button from "@/components/Button";
 import { useSurveyStore } from "../_store/useSurveyStore";
 import { submitAnswer } from "../_lib/submitAnswer";
-import Button from "@/components/Button";
-import { IAnswerResponse } from "@/app/api/sessions/[id]/answers/route";
+import { IUserAnswer } from "../_types/answer";
 
 const QuestionText = () => {
   const router = useRouter();
@@ -20,13 +20,20 @@ const QuestionText = () => {
     const trimmed = text.trim();
     const answerValue = trimmed.length > 0 ? trimmed : null;
 
-    try {
-      const res: IAnswerResponse = await submitAnswer(question.id, {
-        type: "text",
-        text: answerValue,
-      });
+    const answer = {
+      questionId: question.id,
+      type: "text",
+      text: answerValue,
+    } as IUserAnswer;
 
-      updateAnswer(res);
+    try {
+      const res = await submitAnswer(answer);
+
+      updateAnswer({
+        nextQuestionId: res.nextQuestionId,
+        completed: res.completed,
+        answer,
+      });
       setText("");
 
       if (res.completed) {

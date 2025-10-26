@@ -1,18 +1,13 @@
-export const submitAnswer = async (
-  questionId: string,
-  answer?: {
-    type: "singleChoice" | "multiChoice" | "text";
-    optionId?: string | string[];
-    text?: string | null;
-  }
-) => {
+import { IUserAnswer } from "../_types/answer";
+
+export const submitAnswer = async (answer: IUserAnswer) => {
   const sessionId = localStorage.getItem("sessionId");
   const sessionToken = localStorage.getItem("sessionToken");
 
   if (!sessionId || !sessionToken) throw new Error("세션 정보 없음");
 
   const payload: Record<string, unknown> = {
-    questionId,
+    questionId: answer.questionId,
     submittedAt: new Date().toISOString(),
   };
 

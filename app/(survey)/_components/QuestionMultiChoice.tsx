@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 
+import Button from "@/components/Button";
 import { useSurveyStore } from "../_store/useSurveyStore";
 import { submitAnswer } from "../_lib/submitAnswer";
-import Button from "@/components/Button";
+import { IUserAnswer } from "../_types/answer";
 
 const QuestionMultiChoice = () => {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
@@ -20,13 +21,21 @@ const QuestionMultiChoice = () => {
   };
 
   const handleNextButton = async () => {
+    const answer = {
+      questionId: question.id,
+      type: "multiChoice",
+      optionIds: selectedOptions,
+    } as IUserAnswer;
+
     try {
-      const res = await submitAnswer(question.id, {
-        type: "multiChoice",
-        optionId: selectedOptions,
+      const res = await submitAnswer(answer);
+
+      updateAnswer({
+        nextQuestionId: res.nextQuestionId,
+        completed: res.completed,
+        answer,
       });
 
-      updateAnswer(res);
       setSelectedOptions([]);
     } catch (error) {
       alert("답변 제출에 실패했습니다.");

@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 
+import Button from "@/components/Button";
 import { useSurveyStore } from "../_store/useSurveyStore";
 import { ISurveyOption } from "../_types/survey";
 import { submitAnswer } from "../_lib/submitAnswer";
-import Button from "@/components/Button";
+import { IUserAnswer } from "../_types/answer";
 
 const QuestionSingleChoice = () => {
   const [selectedOption, setSelectedOption] = useState<ISurveyOption | null>(
@@ -18,13 +19,20 @@ const QuestionSingleChoice = () => {
   const handleNextButton = async () => {
     if (!selectedOption?.id) return;
 
-    try {
-      const res = await submitAnswer(question.id, {
-        type: "singleChoice",
-        optionId: selectedOption.id,
-      });
+    const answer = {
+      questionId: question.id,
+      type: "singleChoice",
+      optionId: selectedOption.id,
+    } as IUserAnswer;
 
-      updateAnswer(res);
+    try {
+      const res = await submitAnswer(answer);
+
+      updateAnswer({
+        nextQuestionId: res.nextQuestionId,
+        completed: res.completed,
+        answer,
+      });
       setSelectedOption(null);
     } catch (error) {
       alert("답변 제출에 실패했습니다. 다시 시도해주세요.");
