@@ -11,11 +11,8 @@ const StartButton = ({ survey }: { survey: ISurvey }) => {
   const handleStart = async () => {
     setSurvey(survey);
 
-    let token = localStorage.getItem("sessionToken");
-    if (!token) {
-      token = crypto.randomUUID();
-      localStorage.setItem("sessionToken", token);
-    }
+    const token = localStorage.getItem("sessionToken") ?? crypto.randomUUID();
+    localStorage.setItem("sessionToken", token);
 
     const res = await fetch("/api/sessions", {
       method: "POST",
@@ -32,8 +29,9 @@ const StartButton = ({ survey }: { survey: ISurvey }) => {
     }
 
     const data = await res.json();
+    localStorage.setItem("sessionId", data.sessionId);
 
-    router.push(`/questions?sessionId=${data.sessionId}`);
+    router.push("/questions");
   };
 
   return (

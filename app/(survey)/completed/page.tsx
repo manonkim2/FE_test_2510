@@ -1,6 +1,4 @@
-"use client";
-
-const CompletedView = () => {
+const CompletedPage = () => {
   return (
     <div className="p-8 text-center">
       <h1 className="text-2xl font-bold mb-3">설문 완료 🎉</h1>
@@ -10,4 +8,4 @@ const CompletedView = () => {
   );
 };
 
-export default CompletedView;
+export default CompletedPage;

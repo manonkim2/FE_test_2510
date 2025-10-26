@@ -1,11 +1,3 @@
-import { fetchWithErrorHandling } from "./fetchWithError";
-
-interface IAnswerResponse {
-  status: string;
-  nextQuestionId: string;
-  completed: boolean;
-}
-
 export const submitAnswer = async (
   questionId: string,
   answer?: {
@@ -26,15 +18,25 @@ export const submitAnswer = async (
 
   if (answer) payload.answer = answer;
 
-  return await fetchWithErrorHandling<IAnswerResponse>(
-    `/api/sessions/${sessionId}/answers`,
-    {
+  try {
+    const res = await fetch(`/api/sessions/${sessionId}/answers`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Session-Token": sessionToken,
       },
       body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      console.error("❌ 서버 오류:", errData);
+      throw new Error(errData.error || `요청 실패 (${res.status})`);
     }
-  );
+
+    return await res.json();
+  } catch (err) {
+    console.error("❌ 요청 중 예외 발생:", err);
+    throw err;
+  }
 };

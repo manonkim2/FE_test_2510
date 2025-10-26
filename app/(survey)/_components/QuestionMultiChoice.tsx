@@ -21,12 +21,12 @@ const QuestionMultiChoice = () => {
 
   const handleNextButton = async () => {
     try {
-      const result = await submitAnswer(question.id, {
+      const res = await submitAnswer(question.id, {
         type: "multiChoice",
         optionId: selectedOptions,
       });
 
-      updateAnswer(result);
+      updateAnswer(res);
       setSelectedOptions([]);
     } catch (error) {
       alert("답변 제출에 실패했습니다.");

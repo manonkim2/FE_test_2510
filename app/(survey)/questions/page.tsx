@@ -5,16 +5,13 @@ import { useSurveyStore } from "../_store/useSurveyStore";
 import QuestionMultiChoice from "../_components/QuestionMultiChoice";
 import QuestionSingleChoice from "../_components/QuestionSingleChoice";
 import QuestionText from "../_components/QuestionText";
-import CompletedView from "../_components/CompletedView";
 
 const QuestionPage = () => {
-  const { survey, getCurrentQuestion, status } = useSurveyStore();
+  const { survey, getCurrentQuestion } = useSurveyStore();
   const currentQuestion = getCurrentQuestion();
 
   if (!survey)
     return <div className="p-8 text-red-500">설문 데이터가 없습니다.</div>;
-
-  if (status === "completed") return <CompletedView />;
 
   if (!currentQuestion) return null;
 
