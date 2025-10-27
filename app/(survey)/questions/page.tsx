@@ -10,7 +10,7 @@ import QuestionText from "../_components/QuestionText";
 
 const QuestionPage = () => {
   const router = useRouter();
-  const { survey, getCurrentQuestion, updateAnswer } = useSurveyStore();
+  const { survey, getCurrentQuestion } = useSurveyStore();
   const currentQuestion = getCurrentQuestion();
 
   useEffect(() => {
@@ -27,24 +27,8 @@ const QuestionPage = () => {
       });
 
       if (!res.ok) return;
-
-      const savedProgress = localStorage.getItem("surveyProgress");
-
-      if (savedProgress) {
-        const parsed = JSON.parse(savedProgress);
-        if (parsed.status === "completed") {
-          router.push("/completed");
-          return;
-        }
-
-        updateAnswer({
-          nextQuestionId: parsed.nextQuestionId,
-          completed: parsed.status === "completed",
-          answer: parsed.answers,
-        });
-      }
     })();
-  }, [router, updateAnswer]);
+  }, [router]);
 
   if (!survey)
     return <div className="p-8 text-red-500">설문 데이터가 없습니다.</div>;

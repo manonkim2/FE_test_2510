@@ -1,45 +1,61 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ISurvey } from "../_types/survey";
-import { useSurveyStore } from "../_store/useSurveyStore";
 
-const StartButton = ({ survey }: { survey: ISurvey }) => {
+const StartButton = ({
+  surveyId,
+  disabled = false,
+}: {
+  surveyId: string;
+  disabled?: boolean;
+}) => {
   const router = useRouter();
-  const setSurvey = useSurveyStore((s) => s.setSurvey);
 
   const handleStart = async () => {
-    setSurvey(survey);
+    if (disabled) return;
 
-    const token = localStorage.getItem("sessionToken") ?? crypto.randomUUID();
-    localStorage.setItem("sessionToken", token);
+    try {
+      const token = localStorage.getItem("sessionToken") ?? crypto.randomUUID();
+      localStorage.setItem("sessionToken", token);
 
-    const res = await fetch("/api/sessions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Session-Token": token,
-      },
-      body: JSON.stringify({ surveyId: survey.id }),
-    });
+      const res = await fetch("/api/sessions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Session-Token": token,
+        },
+        body: JSON.stringify({ surveyId }),
+      });
 
-    if (!res.ok) {
-      alert("세션 생성에 실패했습니다.");
-      return;
+      if (!res.ok) throw new Error("세션 생성 실패");
+
+      const data = await res.json();
+      localStorage.setItem("sessionId", data.sessionId);
+
+      router.push("/questions");
+    } catch (err) {
+      console.error(err);
+      alert("세션 생성 중 오류가 발생했습니다.");
     }
-
-    const data = await res.json();
-    localStorage.setItem("sessionId", data.sessionId);
-
-    router.push("/questions");
   };
 
   return (
     <button
       onClick={handleStart}
-      className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 border cursor-pointer"
+      disabled={disabled}
+      aria-disabled={disabled}
+      title={
+        disabled
+          ? "이미 완료된 세션입니다. 재응시는 불가합니다."
+          : "설문 시작하기"
+      }
+      className={`px-6 py-3 rounded-lg border ${
+        disabled
+          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+          : "bg-black text-white hover:bg-gray-800"
+      }`}
     >
-      테스트 시작하기
+      {disabled ? "설문 완료됨" : "설문 시작하기"}
     </button>
   );
 };
