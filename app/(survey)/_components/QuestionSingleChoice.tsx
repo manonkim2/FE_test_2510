@@ -41,31 +41,39 @@ const QuestionSingleChoice = () => {
   };
 
   return (
-    <>
-      <div className="flex flex-col gap-3 mb-6">
-        {question.options?.map((opt) => (
-          <label
-            key={opt.id}
-            className="flex items-center gap-2 border p-2 rounded hover:bg-gray-50 cursor-pointer"
-          >
-            <input
-              type="radio"
-              name="singleChoice"
-              value={opt.id}
-              checked={selectedOption?.id === opt.id}
-              onChange={() => setSelectedOption(opt)}
-              className="mr-2"
-            />
-            {opt.label}
-          </label>
-        ))}
+    <div className="space-y-6">
+      <div className="space-y-3">
+        {question.options?.map((opt) => {
+          const isSelected = selectedOption?.id === opt.id;
+
+          return (
+            <label
+              key={opt.id}
+              className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-colors ${
+                isSelected
+                  ? "border-brand bg-brand/5 shadow-sm"
+                  : "border-gray-200 hover:border-brand/50 hover:bg-brand/5"
+              }`}
+            >
+              <input
+                type="radio"
+                name="singleChoice"
+                value={opt.id}
+                checked={isSelected}
+                onChange={() => setSelectedOption(opt)}
+                className="h-4 w-4 accent-brand"
+              />
+              <span className="text-base text-foreground">{opt.label}</span>
+            </label>
+          );
+        })}
       </div>
 
       <Button
         onClick={handleNextButton}
         disabled={question.required !== false && !selectedOption}
       />
-    </>
+    </div>
   );
 };
 

@@ -44,30 +44,37 @@ const QuestionMultiChoice = () => {
   };
 
   return (
-    <>
-      <p className="text-gray-500 text-sm mb-2">(여러 개 선택 가능합니다)</p>
+    <div className="space-y-6">
+      <div className="space-y-3">
+        {question.options?.map((opt) => {
+          const isChecked = selectedOptions.includes(opt.id);
 
-      <div className="flex flex-col gap-3 mb-6">
-        {question.options?.map((opt) => (
-          <label
-            key={opt.id}
-            className="flex items-center gap-2 border p-2 rounded hover:bg-gray-50"
-          >
-            <input
-              type="checkbox"
-              checked={selectedOptions.includes(opt.id)}
-              onChange={() => toggleOption(opt.id)}
-            />
-            {opt.label}
-          </label>
-        ))}
+          return (
+            <label
+              key={opt.id}
+              className={`flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition-colors ${
+                isChecked
+                  ? "border-brand bg-brand/5 shadow-sm"
+                  : "border-gray-200 hover:border-brand/50 hover:bg-brand/5"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={isChecked}
+                onChange={() => toggleOption(opt.id)}
+                className="h-4 w-4 accent-brand"
+              />
+              <span className="text-base text-foreground">{opt.label}</span>
+            </label>
+          );
+        })}
       </div>
 
       <Button
         onClick={handleNextButton}
         disabled={question.required !== false && selectedOptions.length === 0}
       />
-    </>
+    </div>
   );
 };
 

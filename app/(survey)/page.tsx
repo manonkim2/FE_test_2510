@@ -7,12 +7,17 @@ const HomePage = async () => {
   const survey: ISurvey = await res.json();
 
   return (
-    <main className="text-center w-screen h-screen flex flex-col justify-center">
-      <div className="mx-auto">
-        <h1 className="text-2xl font-bold mb-2">{survey.title}</h1>
+    <main className="min-h-screen bg-background flex justify-center items-center">
+      <section className="mx-auto w-full max-w-lg rounded-3xl border border-gray-500 bg-surface px-8 py-10 shadow-sm flex flex-col items-center justify-center min-h-[500px]">
+        <span className="text-xs font-secondary uppercase tracking-[0.3em] text-brand mb-1">
+          Unitblack Survey
+        </span>
+        <h1 className="text-3xl font-semibold leading-tight text-foreground">
+          {survey.title}
+        </h1>
 
         <MainClient survey={survey} />
-      </div>
+      </section>
     </main>
   );
 };

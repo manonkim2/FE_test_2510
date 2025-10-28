@@ -31,23 +31,40 @@ const QuestionPage = () => {
   }, [router]);
 
   if (!survey)
-    return <div className="p-8 text-red-500">설문 데이터가 없습니다.</div>;
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+        <section className="w-full max-w-xl rounded-3xl border border-red-200 bg-surface px-8 py-10 text-center text-red-600 shadow-sm">
+          설문 데이터가 없습니다.
+        </section>
+      </main>
+    );
 
   if (!currentQuestion) return null;
 
   return (
-    <div className="p-8 max-w-lg mx-auto">
-      <h1 className="text-xl font-bold mb-2">{currentQuestion.text}</h1>
-      {currentQuestion.required === false && (
-        <p className="text-sm text-gray-500 mb-4">
-          (선택하지 않아도 넘어갈 수 있습니다)
-        </p>
-      )}
+    <main className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
+      <section className="w-full max-w-2xl rounded-3xl border border-gray-200 bg-surface px-8 py-10 shadow-sm">
+        <header className="space-y-3 mb-8">
+          <span className="text-xs font-secondary uppercase tracking-[0.3em] text-brand">
+            UNITBLACK SURVEY
+          </span>
+          <h1 className="text-2xl font-semibold leading-snug text-foreground">
+            {currentQuestion.text}
+          </h1>
+          {currentQuestion.required === false && (
+            <p className="text-sm text-gray-400 pt-1">
+              답변하지 않아도 넘어갈 수 있습니다.
+            </p>
+          )}
+        </header>
 
-      {currentQuestion.type === "text" && <QuestionText />}
-      {currentQuestion.type === "multiChoice" && <QuestionMultiChoice />}
-      {currentQuestion.type === "singleChoice" && <QuestionSingleChoice />}
-    </div>
+        <div>
+          {currentQuestion.type === "text" && <QuestionText />}
+          {currentQuestion.type === "multiChoice" && <QuestionMultiChoice />}
+          {currentQuestion.type === "singleChoice" && <QuestionSingleChoice />}
+        </div>
+      </section>
+    </main>
   );
 };
 

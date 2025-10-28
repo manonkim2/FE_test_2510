@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import surveys from "@/data/surveys.json";
+import surveys from "@/data/survey.json";
 import { ISurveyOption, ISurveyQuestion } from "@/app/(survey)/_types/survey";
 
 export interface IAnswerResponse {

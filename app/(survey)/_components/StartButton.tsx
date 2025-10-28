@@ -2,17 +2,16 @@
 
 import { useRouter } from "next/navigation";
 
-const StartButton = ({
-  surveyId,
-  disabled = false,
-}: {
-  surveyId: string;
-  disabled?: boolean;
-}) => {
+import { useSurveyStore } from "../_store/useSurveyStore";
+import Button from "@/app/components/Button";
+
+const StartButton = ({ surveyId }: { surveyId: string }) => {
   const router = useRouter();
+  const { status } = useSurveyStore();
+  const complete = status === "completed";
 
   const handleStart = async () => {
-    if (disabled) return;
+    if (complete) return;
 
     try {
       const token = localStorage.getItem("sessionToken") ?? crypto.randomUUID();
@@ -39,25 +38,14 @@ const StartButton = ({
     }
   };
 
-  return (
-    <button
-      onClick={handleStart}
-      disabled={disabled}
-      aria-disabled={disabled}
-      title={
-        disabled
-          ? "이미 완료된 세션입니다. 재응시는 불가합니다."
-          : "설문 시작하기"
-      }
-      className={`px-6 py-3 rounded-lg border ${
-        disabled
-          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-          : "bg-black text-white hover:bg-gray-800"
-      }`}
-    >
-      {disabled ? "설문 완료됨" : "설문 시작하기"}
-    </button>
-  );
+  const buttonText =
+    status === "completed"
+      ? "설문 완료"
+      : status === "inProgress"
+      ? "이어서 진행하기"
+      : "설문 시작하기";
+
+  return <Button onClick={handleStart} disabled={complete} text={buttonText} />;
 };
 
 export default StartButton;

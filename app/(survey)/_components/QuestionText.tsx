@@ -47,21 +47,23 @@ const QuestionText = () => {
   };
 
   return (
-    <>
-      <input
-        type="text"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="답변을 입력하세요"
-        className="border rounded-lg w-full px-3 py-2 mb-4"
-      />
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="답변을 입력하세요"
+          className="w-full rounded-2xl border border-gray-200 bg-surface px-4 py-3 text-base transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40"
+        />
+      </div>
 
       <Button
         onClick={handleOnClick}
         disabled={question.required !== false && !text.trim()}
         text={!question.nextQuestionId ? "제출하기" : "다음"}
       />
-    </>
+    </div>
   );
 };
 
