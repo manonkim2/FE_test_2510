@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import survey from "../../data/survey.json";
-import { useSurveyStore } from "../_store/useSurveyStore";
-import { ISurvey } from "../_types/survey";
+import survey from "@/app/data/survey.json";
+import { useSurveyStore } from "@/app/(survey)/_store/useSurveyStore";
+import { ISurvey } from "@/app/(survey)/_types/survey";
 
 const typedSurvey = survey as ISurvey;
 
