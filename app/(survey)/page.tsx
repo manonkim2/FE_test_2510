@@ -15,11 +15,11 @@ const HomePage = async () => {
 
   return (
     <main className="min-h-screen bg-background flex justify-center items-center">
-      <section className="mx-auto w-full max-w-lg rounded-3xl border border-gray-500 bg-surface px-8 py-10 shadow-sm flex flex-col items-center justify-center min-h-[500px]">
+      <section className="mx-auto max-w-lg rounded-3xl border border-gray-500 bg-surface px-8 py-10 shadow-sm flex flex-col items-center justify-center min-h-[500px]">
         <span className="text-xs font-secondary uppercase tracking-[0.3em] text-brand mb-1">
           Unitblack Survey
         </span>
-        <h1 className="text-3xl font-semibold leading-tight text-foreground">
+        <h1 className="text-2xl font-semibold leading-tight text-foreground">
           {survey.title}
         </h1>
 
