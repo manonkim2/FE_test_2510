@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createSession } from "./sessionStore";
 
 export async function POST(req: Request) {
   const token = req.headers.get("X-Session-Token");
@@ -17,6 +18,7 @@ export async function POST(req: Request) {
   }
 
   const sessionId = crypto.randomUUID();
+  createSession(token, sessionId);
 
   return NextResponse.json({
     sessionId,
