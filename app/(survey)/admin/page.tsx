@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useSurveyStore } from "../_store/useSurveyStore";
 import { StoredAnswer } from "../_types/answer";
 import { ISaveSurvey } from "../_lib/storage";
+import Spinner from "@/app/components/Spinner";
 
 const AdminPage = () => {
   const [initialized, setInitialized] = useState(false);
@@ -73,7 +74,7 @@ const AdminPage = () => {
   if (!initialized) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background px-6">
-        <p className="text-sm text-gray-500">설문 데이터를 불러오는 중입니다…</p>
+        <Spinner label="설문 데이터를 불러오는 중입니다…" />
       </main>
     );
   }
