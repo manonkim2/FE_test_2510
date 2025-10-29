@@ -90,9 +90,6 @@ const QuestionText = () => {
             {text.trim().length}/{maxLength}자
           </p>
         )}
-        <p className="text-xs text-gray-500">
-          간단하게 생각나는 답을 적어주세요.
-        </p>
       </div>
 
       {error && (

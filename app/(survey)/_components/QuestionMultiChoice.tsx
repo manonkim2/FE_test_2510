@@ -16,8 +16,7 @@ const QuestionMultiChoice = () => {
   const question = getCurrentQuestion();
   if (!question) return null;
 
-  const minSelect =
-    question.minSelect ?? (question.required !== false ? 1 : 0);
+  const minSelect = question.minSelect ?? (question.required !== false ? 1 : 0);
   const maxSelect = question.maxSelect;
 
   const toggleOption = (id: string) => {
@@ -81,16 +80,15 @@ const QuestionMultiChoice = () => {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <p className="text-xs font-secondary uppercase tracking-[0.2em] text-gray-500">
-          여러 개 선택 가능합니다
-        </p>
+      <div className="text-sm flex">
+        <p className="pr-1">복수 선택 가능합니다.</p>
         {(minSelect > 0 || typeof maxSelect === "number") && (
-          <p className="text-xs text-gray-400">
-            {minSelect > 0 ? `${minSelect}개 이상` : "최소 제한 없음"}
+          <p>
+            ({minSelect > 0 ? `${minSelect}개 이상` : "최소 제한 없음"}
             {typeof maxSelect === "number"
               ? ` · 최대 ${maxSelect}개`
               : " · 제한 없음"}
+            )
           </p>
         )}
       </div>
