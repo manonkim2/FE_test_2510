@@ -260,6 +260,7 @@ const AdminPage = () => {
     (status === "inProgress" ||
       hasPendingAnswers ||
       editingQuestionId !== null);
+
   const answeredCount = useMemo(
     () =>
       visibleQuestions.filter((question) => Boolean(answers[question.id]))
@@ -468,14 +469,10 @@ const AdminPage = () => {
             <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl bg-brand/5 blur-2xl" />
           )}
 
-          <div className="px-5 py-1 text-center backdrop-blur-sm">
-            <p className="text-lg font-semibold text-gray-700">
-              현재 설문 진행 상태
-            </p>
-            <span className="mt-2 inline-block rounded-full bg-brand/10 px-4 py-1 text-xs font-medium text-brand">
-              {statusBadgeLabel}
-            </span>
-          </div>
+          <p className="text-lg font-semibold text-gray-700 text-center">
+            제출 응답 조회
+          </p>
+
           <div className="sticky top-4 z-20 space-y-4">
             {editingPulseActive && visibleQuestions.length > 0 && (
               <div className="rounded-2xl bg-brand border border-brand/30 px-4 py-3 shadow-sm backdrop-blur-xl animate-pulse [animation-duration:3s]">
@@ -497,15 +494,15 @@ const AdminPage = () => {
 
           {status === "inProgress" && (
             <p className="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-center text-xs text-amber-700">
-              분기 변경으로 추가 응답이 필요합니다. 아래에서 바로 이어서 입력해
-              주세요.
+              설문이 진행 중입니다. <br />
+              현재는 응답을 조회만 할 수 있으며, 수정은 완료 후에 가능합니다.
             </p>
           )}
 
           {status === "error" && (
             <p className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-center text-xs text-red-600">
-              분기 정보에 오류가 감지되었습니다. 문항 응답을 다시 확인하거나
-              분기 설정을 검토해 주세요.
+              분기 정보에 오류가 감지되었습니다. <br /> 문항 응답을 다시
+              확인하거나 분기 설정을 검토해 주세요.
             </p>
           )}
 
