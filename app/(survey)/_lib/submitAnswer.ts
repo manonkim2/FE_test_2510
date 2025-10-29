@@ -26,7 +26,11 @@ export const submitAnswer = async (answer: IUserAnswer) => {
     if (!res.ok) {
       const errData = await res.json().catch(() => ({}));
       console.error("❌ 서버 오류:", errData);
-      throw new Error(errData.error || `요청 실패 (${res.status})`);
+      const message =
+        typeof errData?.message === "string"
+          ? errData.message
+          : `요청 실패 (${res.status})`;
+      throw new Error(message);
     }
 
     return await res.json();

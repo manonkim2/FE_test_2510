@@ -1,9 +1,14 @@
+type SingleChoiceAnswer = { type: "singleChoice"; optionId?: string | null };
+type MultiChoiceAnswer = { type: "multiChoice"; optionIds: string[] };
+type TextAnswer = { type: "text"; text: string | null };
+
 export type StoredAnswer =
-  | { type: "singleChoice"; optionId: string }
-  | { type: "multiChoice"; optionIds: string[] }
-  | { type: "text"; text: string }
+  | SingleChoiceAnswer
+  | MultiChoiceAnswer
+  | TextAnswer
   | null;
 
-export type IUserAnswer = Exclude<StoredAnswer, null> & {
-  questionId: string;
-};
+export type IUserAnswer = (SingleChoiceAnswer | MultiChoiceAnswer | TextAnswer) &
+  {
+    questionId: string;
+  };

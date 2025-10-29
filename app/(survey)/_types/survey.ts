@@ -13,6 +13,7 @@ export interface ISurveyQuestion {
   nextQuestionId?: string | null;
   minSelect?: number;
   maxSelect?: number;
+  maxLength?: number;
 }
 
 export interface ISurvey {

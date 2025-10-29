@@ -12,31 +12,46 @@ const QuestionSingleChoice = () => {
   const [selectedOption, setSelectedOption] = useState<ISurveyOption | null>(
     null
   );
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { getCurrentQuestion, updateAnswer } = useSurveyStore();
   const question = getCurrentQuestion();
   if (!question) return null;
 
   const handleNextButton = async () => {
-    if (!selectedOption?.id) return;
+    if (question.required !== false && !selectedOption?.id) {
+      setError("답변을 선택해주세요.");
+      return;
+    }
 
+    const hasSelection = Boolean(selectedOption?.id);
     const answer = {
       questionId: question.id,
       type: "singleChoice",
-      optionId: selectedOption.id,
+      ...(hasSelection ? { optionId: selectedOption?.id } : {}),
     } as IUserAnswer;
 
     try {
+      setIsSubmitting(true);
+      setError(null);
+
       const res = await submitAnswer(answer);
 
       updateAnswer({
         nextQuestionId: res.nextQuestionId,
         completed: res.completed,
-        answer,
+        answer: hasSelection ? answer : undefined,
       });
       setSelectedOption(null);
     } catch (error) {
-      alert("답변 제출에 실패했습니다. 다시 시도해주세요.");
       console.error(error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "답변 제출에 실패했습니다. 다시 시도해주세요."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -60,7 +75,11 @@ const QuestionSingleChoice = () => {
                 name="singleChoice"
                 value={opt.id}
                 checked={isSelected}
-                onChange={() => setSelectedOption(opt)}
+                onChange={() => {
+                  setSelectedOption(opt);
+                  setError(null);
+                }}
+                disabled={isSubmitting}
                 className="h-4 w-4 accent-brand"
               />
               <span className="text-base text-foreground">{opt.label}</span>
@@ -69,9 +88,16 @@ const QuestionSingleChoice = () => {
         })}
       </div>
 
+      {error && (
+        <p className="text-sm text-red-500" aria-live="polite">
+          {error}
+        </p>
+      )}
+
       <Button
         onClick={handleNextButton}
-        disabled={question.required !== false && !selectedOption}
+        disabled={isSubmitting}
+        text={isSubmitting ? "전송 중..." : "다음"}
       />
     </div>
   );
