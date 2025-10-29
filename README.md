@@ -55,6 +55,7 @@
   - Yarn 4
 
 - **설치 & 실행**
+  - 이 프로젝트는 `.env.local.example` 파일을 포함하며, 실행 전 `.env.local`로 이름을 변경해야 합니다.
 
 ```bash
 yarn install

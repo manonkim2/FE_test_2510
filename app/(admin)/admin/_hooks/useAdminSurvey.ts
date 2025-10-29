@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { useSurveyStore } from "@/app/(survey)/_store/useSurveyStore";
+import {
+  SurveyStore,
+  useSurveyStore,
+} from "@/app/(survey)/_store/useSurveyStore";
 import { ISaveSurvey } from "@/app/(survey)/_lib/storage";
 import { buildQuestionPath } from "@/app/(survey)/_lib/navigation";
 import type { ISurvey } from "@/app/(survey)/_types/survey";
@@ -14,7 +17,7 @@ interface UseAdminSurveyResult {
   error: string | null;
   status: SurveyStatus;
   surveyLoaded: boolean;
-  answers: ReturnType<typeof useSurveyStore>["answers"];
+  answers: SurveyStore["answers"];
   canEdit: boolean;
   visibleQuestions: ReturnType<typeof buildQuestionPath>;
   editingQuestionId: string | null;
@@ -35,7 +38,7 @@ export const useAdminSurvey = (
   initialError: string | null = null
 ): UseAdminSurveyResult => {
   const [initialized, setInitialized] = useState(false);
-  const [error, setError] = useState<string | null>(initialError);
+  const [error, _] = useState<string | null>(initialError);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
     null
   );
@@ -49,6 +52,7 @@ export const useAdminSurvey = (
 
   useEffect(() => {
     if (initialError) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInitialized(true);
       return;
     }
@@ -122,6 +126,7 @@ export const useAdminSurvey = (
   useEffect(() => {
     if (!canEdit) {
       if (editingQuestionId !== null) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setEditingQuestionId(null);
       }
       if (lastEditedQuestionId !== null) {

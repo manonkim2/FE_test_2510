@@ -60,11 +60,7 @@ const evaluateSurveyProgress = (
 
     prunedAnswers[pointer] = { ...answer };
 
-    const resolvedNext = getNextQuestionIdFromAnswer(
-      question,
-      answer,
-      answers
-    );
+    const resolvedNext = getNextQuestionIdFromAnswer(question, answer, answers);
 
     if (!resolvedNext) {
       status = "completed";
@@ -118,7 +114,7 @@ interface SurveyStateSnapshot {
   status: SurveyStore["status"];
 }
 
-interface SurveyStore {
+export interface SurveyStore {
   survey: ISurvey | null;
   currentQuestionId: string | null;
   answers: Record<string, StoredAnswer>;
@@ -218,7 +214,9 @@ export const useSurveyStore = create<SurveyStore>((set, get) => ({
 
       return {
         currentQuestionId:
-          data.nextQuestionId ?? state.survey?.startQuestionId ?? state.currentQuestionId,
+          data.nextQuestionId ??
+          state.survey?.startQuestionId ??
+          state.currentQuestionId,
         status: nextStatus,
         answers: data.answers ?? state.answers,
       };
