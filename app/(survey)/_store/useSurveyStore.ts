@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { ISurvey, ISurveyQuestion } from "../_types/survey";
 import { IUserAnswer, StoredAnswer } from "../_types/answer";
-import { saveSurveyProgress } from "../_lib/storage";
+import { ISaveSurvey, saveSurveyProgress } from "../_lib/storage";
 
 interface UpdateAnswerPayload {
   nextQuestionId: string | null;
@@ -19,6 +19,7 @@ interface SurveyStore {
   updateAnswer: (response: UpdateAnswerPayload) => void;
   setStatus: (status: SurveyStore["status"]) => void;
   reset: () => void;
+  hydrateProgress: (data: ISaveSurvey) => void;
 }
 
 export const useSurveyStore = create<SurveyStore>((set, get) => ({
@@ -64,4 +65,21 @@ export const useSurveyStore = create<SurveyStore>((set, get) => ({
   setStatus: (status) => set({ status }),
 
   reset: () => set({ survey: null, currentQuestionId: null, answers: {} }),
+
+  hydrateProgress: (data) =>
+    set((state) => {
+      if (!state.survey) return state;
+
+      const nextStatus =
+        data.status === "completed" || data.status === "inProgress"
+          ? data.status
+          : state.status;
+
+      return {
+        currentQuestionId:
+          data.nextQuestionId ?? state.survey?.startQuestionId ?? state.currentQuestionId,
+        status: nextStatus,
+        answers: data.answers ?? state.answers,
+      };
+    }),
 }));

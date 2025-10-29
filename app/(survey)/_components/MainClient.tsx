@@ -6,32 +6,28 @@ import StartButton from "./StartButton";
 import AdminButton from "./AdminButton";
 import { ISurvey } from "../_types/survey";
 import { useSurveyStore } from "../_store/useSurveyStore";
+import { ISaveSurvey } from "../_lib/storage";
 
 const MainPage = ({ survey }: { survey: ISurvey }) => {
-  const { updateAnswer, status, currentQuestionId } = useSurveyStore();
-
+  const { status, currentQuestionId } = useSurveyStore();
   const setSurvey = useSurveyStore((s) => s.setSurvey);
+  const hydrateProgress = useSurveyStore((s) => s.hydrateProgress);
 
   useEffect(() => {
+    if (status !== "idle") return;
+
     setSurvey(survey);
 
     const savedProgress = localStorage.getItem("surveyProgress");
     if (!savedProgress) return;
 
-    const isStoreEmpty = status === "idle" && !currentQuestionId;
-
-    (async () => {
-      if (isStoreEmpty) {
-        const parsed = JSON.parse(savedProgress);
-
-        updateAnswer({
-          nextQuestionId: parsed.nextQuestionId,
-          completed: parsed.status === "completed",
-          answer: parsed.answers,
-        });
-      }
-    })();
-  }, [currentQuestionId, setSurvey, status, survey, updateAnswer]);
+    try {
+      const parsed = JSON.parse(savedProgress) as ISaveSurvey;
+      hydrateProgress(parsed);
+    } catch (error) {
+      console.error("surveyProgress parse 실패", error);
+    }
+  }, [hydrateProgress, setSurvey, status, survey]);
 
   return (
     <div className="mt-8 space-y-4 flex flex-col items-center">
