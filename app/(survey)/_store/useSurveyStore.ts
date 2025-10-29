@@ -29,12 +29,18 @@ export const useSurveyStore = create<SurveyStore>((set, get) => ({
   status: "idle",
 
   setSurvey: (data) =>
-    set((state) => ({
-      survey: data,
-      currentQuestionId: state.currentQuestionId ?? data.startQuestionId,
-      answers: state.answers ?? {},
-      status: state.status,
-    })),
+    set((state) => {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("surveyId", data.id);
+      }
+
+      return {
+        survey: data,
+        currentQuestionId: state.currentQuestionId ?? data.startQuestionId,
+        answers: state.answers ?? {},
+        status: state.status,
+      };
+    }),
 
   getCurrentQuestion: () => {
     const { survey, currentQuestionId } = get();
