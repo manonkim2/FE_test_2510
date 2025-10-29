@@ -4,6 +4,17 @@ export interface ISurveyOption {
   nextQuestionId?: string | null;
 }
 
+export interface ISurveyConditionalNext {
+  go: string | null;
+  default?: boolean;
+  when?: {
+    anySelectedIn?: {
+      questionId: string;
+      optionIds: string[];
+    };
+  };
+}
+
 export interface ISurveyQuestion {
   id: string;
   type: "singleChoice" | "multiChoice" | "text";
@@ -11,6 +22,7 @@ export interface ISurveyQuestion {
   required?: boolean;
   options?: ISurveyOption[];
   nextQuestionId?: string | null;
+  next?: ISurveyConditionalNext[];
   minSelect?: number;
   maxSelect?: number;
   maxLength?: number;

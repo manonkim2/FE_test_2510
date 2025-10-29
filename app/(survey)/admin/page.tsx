@@ -7,12 +7,65 @@ import { StoredAnswer } from "../_types/answer";
 import { ISaveSurvey } from "../_lib/storage";
 import { ISurveyQuestion, ISurvey } from "../_types/survey";
 import Spinner from "@/app/components/Spinner";
+import { isAdminEditableStatus } from "./utils";
+
+const resolveConditionalNext = (
+  question: ISurveyQuestion,
+  answers: Record<string, StoredAnswer>
+) => {
+  if (!question.next?.length) return undefined;
+
+  let fallback: string | null | undefined = question.nextQuestionId ?? null;
+
+  for (const route of question.next) {
+    if (route.default) {
+      fallback = route.go ?? null;
+      continue;
+    }
+
+    if (!route.when) continue;
+
+    const { anySelectedIn } = route.when;
+    let matched = true;
+
+    if (anySelectedIn) {
+      const targetAnswer = answers[anySelectedIn.questionId];
+      if (!targetAnswer) {
+        matched = false;
+      } else if (targetAnswer.type === "singleChoice") {
+        matched = Boolean(
+          targetAnswer.optionId &&
+            anySelectedIn.optionIds.includes(targetAnswer.optionId)
+        );
+      } else if (targetAnswer.type === "multiChoice") {
+        matched = targetAnswer.optionIds.some((optionId) =>
+          anySelectedIn.optionIds.includes(optionId)
+        );
+      } else {
+        matched = false;
+      }
+    }
+
+    if (matched) {
+      return route.go ?? null;
+    }
+  }
+
+  return fallback ?? null;
+};
 
 const getNextQuestionId = (
   question: ISurveyQuestion,
-  answer: StoredAnswer | undefined
+  answer: StoredAnswer | undefined,
+  answers: Record<string, StoredAnswer>
 ) => {
-  if (!answer) return question.nextQuestionId ?? null;
+  if (!answer) {
+    const conditionalNext = resolveConditionalNext(question, answers);
+    if (conditionalNext !== undefined) {
+      return conditionalNext;
+    }
+    return question.nextQuestionId ?? null;
+  }
 
   if (
     question.type === "singleChoice" &&
@@ -23,8 +76,32 @@ const getNextQuestionId = (
       (option) => option.id === answer.optionId
     );
     if (matched) {
-      return matched.nextQuestionId ?? question.nextQuestionId ?? null;
+      if (matched.nextQuestionId !== undefined) {
+        return (
+          matched.nextQuestionId ??
+          resolveConditionalNext(question, answers) ??
+          null
+        );
+      }
     }
+  }
+
+  if (question.type === "multiChoice" && answer?.type === "multiChoice") {
+    const matched = question.options?.find((option) =>
+      answer.optionIds.includes(option.id)
+    );
+    if (matched && matched.nextQuestionId !== undefined) {
+      return (
+        matched.nextQuestionId ??
+        resolveConditionalNext(question, answers) ??
+        null
+      );
+    }
+  }
+
+  const conditionalNext = resolveConditionalNext(question, answers);
+  if (conditionalNext !== undefined) {
+    return conditionalNext;
   }
 
   return question.nextQuestionId ?? null;
@@ -50,7 +127,7 @@ const buildQuestionPath = (
     const answer = answers[pointer];
     if (!answer) break;
 
-    const nextId = getNextQuestionId(question, answer);
+    const nextId = getNextQuestionId(question, answer, answers);
     if (!nextId) break;
 
     pointer = nextId;
@@ -59,11 +136,13 @@ const buildQuestionPath = (
   return path;
 };
 
+type AdminEditorCloseReason = "saved" | "cancelled";
+
 interface AdminAnswerEditorProps {
   question: ISurveyQuestion;
   answer: StoredAnswer | undefined;
   disabled?: boolean;
-  onClose: () => void;
+  onClose: (reason: AdminEditorCloseReason) => void;
 }
 
 const AdminAnswerEditor = ({
@@ -133,7 +212,7 @@ const AdminAnswerEditor = ({
     }
 
     setStoredAnswer(question.id, nextAnswer);
-    onClose();
+    onClose("saved");
   };
 
   return (
@@ -218,7 +297,7 @@ const AdminAnswerEditor = ({
       <div className="flex justify-end gap-2">
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => onClose("cancelled")}
           disabled={disabled}
           className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
         >
@@ -243,10 +322,13 @@ const AdminPage = () => {
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
     null
   );
+  const [lastEditedQuestionId, setLastEditedQuestionId] = useState<
+    string | null
+  >(null);
   const { status, answers, survey } = useSurveyStore();
   const setSurvey = useSurveyStore((s) => s.setSurvey);
   const hydrateProgress = useSurveyStore((s) => s.hydrateProgress);
-  const canEdit = status !== "idle";
+  const canEdit = isAdminEditableStatus(status);
   const visibleQuestions = useMemo(
     () => (survey ? buildQuestionPath(survey, answers) : []),
     [answers, survey]
@@ -260,7 +342,6 @@ const AdminPage = () => {
     (status === "inProgress" ||
       hasPendingAnswers ||
       editingQuestionId !== null);
-
   const answeredCount = useMemo(
     () =>
       visibleQuestions.filter((question) => Boolean(answers[question.id]))
@@ -270,6 +351,22 @@ const AdminPage = () => {
   const progressPercent = visibleQuestions.length
     ? Math.round((answeredCount / visibleQuestions.length) * 100)
     : 0;
+  const handleStartEditing = (questionId: string) => {
+    if (!canEdit) return;
+    setEditingQuestionId(questionId);
+  };
+
+  const handleCloseEditing = (
+    questionId: string,
+    reason: AdminEditorCloseReason
+  ) => {
+    setEditingQuestionId(null);
+    if (reason === "saved") {
+      setLastEditedQuestionId(questionId);
+    } else {
+      setLastEditedQuestionId(null);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -329,14 +426,15 @@ const AdminPage = () => {
   }, [hydrateProgress, setSurvey]);
 
   useEffect(() => {
-    if (!canEdit && editingQuestionId !== null) {
-      setEditingQuestionId(null);
+    if (!canEdit) {
+      if (editingQuestionId !== null) {
+        setEditingQuestionId(null);
+      }
+      if (lastEditedQuestionId !== null) {
+        setLastEditedQuestionId(null);
+      }
+      return;
     }
-  }, [canEdit, editingQuestionId]);
-
-  useEffect(() => {
-    if (!canEdit) return;
-    if (!visibleQuestions.length) return;
 
     if (
       editingQuestionId &&
@@ -347,15 +445,39 @@ const AdminPage = () => {
     }
 
     if (editingQuestionId !== null) return;
+    if (!lastEditedQuestionId) return;
 
     const firstUnanswered = visibleQuestions.find(
       (question) => !answers[question.id]
     );
 
-    if (firstUnanswered) {
+    if (firstUnanswered && firstUnanswered.id !== lastEditedQuestionId) {
       setEditingQuestionId(firstUnanswered.id);
+      setLastEditedQuestionId(null);
+      return;
     }
-  }, [answers, canEdit, editingQuestionId, visibleQuestions]);
+
+    const lastEditedIndex = visibleQuestions.findIndex(
+      (question) => question.id === lastEditedQuestionId
+    );
+
+    if (lastEditedIndex >= 0) {
+      const nextQuestion = visibleQuestions[lastEditedIndex + 1];
+      if (nextQuestion) {
+        setEditingQuestionId(nextQuestion.id);
+        setLastEditedQuestionId(null);
+        return;
+      }
+    }
+
+    setLastEditedQuestionId(null);
+  }, [
+    answers,
+    canEdit,
+    editingQuestionId,
+    lastEditedQuestionId,
+    visibleQuestions,
+  ]);
 
   if (!initialized) {
     return (
@@ -469,10 +591,14 @@ const AdminPage = () => {
             <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl bg-brand/5 blur-2xl" />
           )}
 
-          <p className="text-lg font-semibold text-gray-700 text-center">
-            제출 응답 조회
-          </p>
-
+          <div className="px-5 py-1 text-center backdrop-blur-sm">
+            <p className="text-lg font-semibold text-gray-700">
+              현재 설문 진행 상태
+            </p>
+            <span className="mt-2 inline-block rounded-full bg-brand/10 px-4 py-1 text-xs font-medium text-brand">
+              {statusBadgeLabel}
+            </span>
+          </div>
           <div className="sticky top-4 z-20 space-y-4">
             {editingPulseActive && visibleQuestions.length > 0 && (
               <div className="rounded-2xl bg-brand border border-brand/30 px-4 py-3 shadow-sm backdrop-blur-xl animate-pulse [animation-duration:3s]">
@@ -494,15 +620,16 @@ const AdminPage = () => {
 
           {status === "inProgress" && (
             <p className="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-center text-xs text-amber-700">
-              설문이 진행 중입니다. <br />
-              현재는 응답을 조회만 할 수 있으며, 수정은 완료 후에 가능합니다.
+              선택하신 내용이 바뀌어, 이어지는 질문에 새로 답변이 필요합니다.
+              <br />
+              아래에서 바로 진행해 주세요.
             </p>
           )}
 
           {status === "error" && (
             <p className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-center text-xs text-red-600">
-              분기 정보에 오류가 감지되었습니다. <br /> 문항 응답을 다시
-              확인하거나 분기 설정을 검토해 주세요.
+              분기 정보에 오류가 감지되었습니다. 문항 응답을 다시 확인하거나
+              분기 설정을 검토해 주세요.
             </p>
           )}
 
@@ -534,7 +661,9 @@ const AdminPage = () => {
                       question={question}
                       answer={answer}
                       disabled={!canEdit}
-                      onClose={() => setEditingQuestionId(null)}
+                      onClose={(reason) =>
+                        handleCloseEditing(question.id, reason)
+                      }
                     />
                   ) : (
                     <>
@@ -545,9 +674,7 @@ const AdminPage = () => {
                         <div className="mt-3 flex flex-wrap gap-2">
                           <button
                             type="button"
-                            onClick={() =>
-                              canEdit && setEditingQuestionId(question.id)
-                            }
+                            onClick={() => handleStartEditing(question.id)}
                             className="rounded-lg border border-brand px-3 py-1 text-xs font-medium text-brand hover:bg-brand/10"
                           >
                             수정
